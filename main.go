@@ -77,6 +77,7 @@ func main() {
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUsers)
 	mux.HandleFunc("POST /api/chirps", apiCfg.handlerCreateChirp)
+	mux.HandleFunc("GET /api/chirps", apiCfg.handlerListChirps)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
@@ -198,6 +199,29 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 	}
 
 	respondWithJSON(w, http.StatusCreated, out)
+}
+
+func (cfg *apiConfig) handlerListChirps(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	dbChirps, err := cfg.db.ListChirps(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Something went wrong")
+		return
+	}
+
+	chirps := make([]Chirp, len(dbChirps))
+	for i, c := range dbChirps {
+		chirps[i] = Chirp{
+			ID:        c.ID,
+			CreatedAt: c.CreatedAt,
+			UpdatedAt: c.UpdatedAt,
+			Body:      c.Body,
+			UserID:    c.UserID,
+		}
+	}
+
+	respondWithJSON(w, http.StatusOK, chirps)
 }
 
 // Helpers

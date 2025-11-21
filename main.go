@@ -202,6 +202,7 @@ func (cfg *apiConfig) handlerCreateChirp(w http.ResponseWriter, r *http.Request)
 }
 
 func (cfg *apiConfig) handlerListChirps(w http.ResponseWriter, r *http.Request) {
+	log.Println("method:", r.Method)
 	w.Header().Set("Content-Type", "application/json")
 
 	dbChirps, err := cfg.db.ListChirps(r.Context())
